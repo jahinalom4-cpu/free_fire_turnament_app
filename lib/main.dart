@@ -12,34 +12,31 @@ import 'package:tournament_freefire/notification/notifation_handler.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main()async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: "AIzaSyB-9kmPXfz1qyII54eeJDZAtwI6Zz_BG3E",
-      appId: "1:909961959511:android:b0b3c81bf2c23ea0af2b12",
-      messagingSenderId: "909961959511",
-      projectId: "tournamentapp-ea980",
-      storageBucket: "tournamentapp-ea980.firebasestorage.app",
+      apiKey: "AIzaSyBiEL7Uexumu-A1BuPqwzYk10ij9czWjRw",
+      appId: "1:264690258883:web:3248f03f08de62521de376",
+      messagingSenderId: "264690258883",
+      projectId: "gen-lang-client-0922107247",
+      storageBucket: "gen-lang-client-0922107247.firebasestorage.app",
     ),
   );
-  FirebaseMessaging.onBackgroundMessage(notiService.firebaseMessagingBackgroundHandler);
+  FirebaseMessaging.onBackgroundMessage(
+      notiService.firebaseMessagingBackgroundHandler);
 
   notiService.initializeNotification();
 
-  FirebaseMessaging.instance
-      .subscribeToTopic("all_users")
-      .then((_) {
+  FirebaseMessaging.instance.subscribeToTopic("all_users").then((_) {
     print("✅ Successfully subscribed to topic: all_users");
-  })
-      .catchError((error) {
+  }).catchError((error) {
     print("❌ Failed to subscribe to topic: $error");
   });
 
-  runApp( MyApp());
+  runApp(MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   @override
@@ -58,4 +55,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
