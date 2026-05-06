@@ -4,14 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // ✅ Firestore import
 import 'package:tournament_freefire/notification/get_serverkey.dart';
 
 class NotificationService {
-  static final String projectId = 'tournamentapp-ea980';
+  static final String projectId = 'gen-lang-client-0922107247';
 
   /// This method fetches tokens and sends notifications
   static Future<void> sendNotificationToAllAdmins({
     required String title,
     required String body,
   }) async {
-    final url = Uri.parse('https://fcm.googleapis.com/v1/projects/$projectId/messages:send');
+    final url = Uri.parse(
+        'https://fcm.googleapis.com/v1/projects/$projectId/messages:send');
     GetServerKey getServerKey = GetServerKey();
     String accessToken = await getServerKey.getServerKeyToken();
 
@@ -19,9 +20,8 @@ class NotificationService {
     final firestore = FirebaseFirestore.instance;
     final tokenDocs = await firestore.collection("adminDeviceTokens").get();
 
-    List<String> adminDeviceTokens = tokenDocs.docs
-        .map((doc) => doc['token'] as String)
-        .toList();
+    List<String> adminDeviceTokens =
+        tokenDocs.docs.map((doc) => doc['token'] as String).toList();
 
     for (String token in adminDeviceTokens) {
       try {
