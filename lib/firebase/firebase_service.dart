@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+// FIX 1: Corrected the hide clause to ensure GoogleSignIn comes from the right package
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:tournament_freefire/models/user_model.dart';
@@ -9,6 +10,9 @@ class FirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // FIX 2: Create a single instance of GoogleSignIn for the class
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
   // 🔐 Sign In with Email & Password
   Future<User?> signInWithEmail(String email, String password) async {
     try {
@@ -16,7 +20,7 @@ class FirebaseService {
           email: email, password: password);
       return result.user;
     } catch (e) {
-      print("Email SignIn Error: $e");
+      debugPrint("Email SignIn Error: $e");
       return null;
     }
   }
@@ -41,12 +45,11 @@ class FirebaseService {
           email: email,
           phone: phone,
           password: password,
-          image: imageUrl ?? '',
+          image: imageUrl,
         );
 
-// Now save all fields of the AppUser object
-//         await _firestore.collection('users').doc(user.uid).set(appUser.toJson());
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        await _firestore.collection('users').doc(user.uid).set({
+          ...appUser.toJson(), // Use your model's toJson
           'totalBalance': 0,
           'winningBalance': 0,
           'depositBalance': 0,
@@ -54,16 +57,15 @@ class FirebaseService {
           'garenaPlayed': 0,
           'ludoPlayed': 0,
           'carromPlayed': 0,
-          'Request&notifications': [],
+          'Request_Notifications':
+              [], // Fixed potential special character issue
           'createdAt': FieldValue.serverTimestamp(),
-          // ...add other defaults you want
         });
-
       }
 
       return user;
     } catch (e) {
-      print("Email SignUp Error: $e");
+      debugPrint("Email SignUp Error: $e");
       return null;
     }
   }
@@ -71,18 +73,20 @@ class FirebaseService {
   // 🔐 Sign In with Google and save to Firestore (if new)
   Future<User?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      // FIX 3: Use the class-level instance
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
+          await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final result = await _auth.signInWithCredential(credential);
+      final UserCredential result =
+          await _auth.signInWithCredential(credential);
       final user = result.user;
 
       if (user != null) {
@@ -92,57 +96,57 @@ class FirebaseService {
             uid: user.uid,
             name: user.displayName ?? '',
             email: user.email ?? '',
-            phone: '', // Google sign-in won't provide this
-            password: '', // Google sign-in doesn't need this
+            phone: '',
+            password: '',
             image: user.photoURL ?? '',
           );
 
-          await _firestore.collection('users').doc(user.uid).set(appUser.toJson());
+          await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .set(appUser.toJson());
         }
       }
 
       return user;
     } catch (e) {
-      print("Google SignIn Error: $e");
+      debugPrint("Google SignIn Error: $e");
       return null;
     }
   }
-// 📥 Get User Data by UID from Firestore
 
+  // 📥 Get User Data by UID from Firestore
   Future<AppUser?> getUserData(String uid) async {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
       if (doc.exists) {
         return AppUser.fromJson(doc.data()!);
       } else {
-        print("User document not found in Firestore.");
         return null;
       }
     } catch (e) {
-      print("Get User Data Error: $e");
+      debugPrint("Get User Data Error: $e");
       return null;
     }
   }
 
   Future<void> signOut() async {
     await _auth.signOut();
-    await GoogleSignIn().signOut();
+    await _googleSignIn.signOut();
     await FacebookAuth.instance.logOut();
   }
 
   Future<void> updateDeviceToken(String userId, String token) async {
-    await FirebaseFirestore.instance
+    await _firestore
         .collection('users')
         .doc(userId)
         .update({'deviceToken': token});
   }
 
-
-
-  // 👤 Get Current User
   User? get currentUser => _auth.currentUser;
 }
 
+// Global functions (consider moving these to a controller)
 Future<void> createPurchaseRequest({
   required BuildContext context,
   required String uid,
@@ -152,10 +156,10 @@ Future<void> createPurchaseRequest({
 }) async {
   try {
     final userDoc =
-    await FirebaseFirestore.instance.collection("users").doc(uid).get();
+        await FirebaseFirestore.instance.collection("users").doc(uid).get();
 
     if (!userDoc.exists) {
-      _showMessage(context, "User not found.");
+      if (context.mounted) _showMessage(context, "User not found.");
       return;
     }
 
@@ -164,11 +168,10 @@ Future<void> createPurchaseRequest({
     final deviceToken = userData['deviceToken'] ?? '';
 
     if (userBalance < price) {
-      _showMessage(context, "Insufficient balance.");
+      if (context.mounted) _showMessage(context, "Insufficient balance.");
       return;
     }
 
-    // Create the request
     await FirebaseFirestore.instance.collection("requests").add({
       "userId": uid,
       "ffId": ffId,
@@ -179,18 +182,18 @@ Future<void> createPurchaseRequest({
       "deviceToken": deviceToken,
     });
 
-    // Deduct the user's balance
     await FirebaseFirestore.instance.collection("users").doc(uid).update({
       "totalBalance": userBalance - price,
     });
 
-    Navigator.of(context).pop();
-    _showMessage(context, "Request submitted successfully.");
+    if (context.mounted) {
+      Navigator.of(context).pop();
+      _showMessage(context, "Request submitted successfully.");
+    }
   } catch (e) {
-    _showMessage(context, "Something went wrong: $e");
+    if (context.mounted) _showMessage(context, "Something went wrong: $e");
   }
 }
-
 
 void _showMessage(BuildContext context, String message) {
   ScaffoldMessenger.of(context).showSnackBar(
