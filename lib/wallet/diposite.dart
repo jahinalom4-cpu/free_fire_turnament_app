@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tournament_freefire/common_widget/common_widget.dart';
-import 'package:tournament_freefire/controllers/diposte_pag%20controller.dart';
+import 'package:tournament_freefire/controllers/diposte_page_controller.dart';
 
 class Diposite extends StatelessWidget {
   const Diposite({super.key});
