@@ -7,24 +7,25 @@ import 'package:tournament_freefire/Request&notifications/allRequest&Notificatio
 import '../main.dart';
 
 class NotificationHandler {
-  static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  static final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+  static final FirebaseMessaging _firebaseMessaging =
+      FirebaseMessaging.instance;
+  static final FlutterLocalNotificationsPlugin
+      _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings initializationSettings =
-    InitializationSettings(android: initializationSettingsAndroid);
+        InitializationSettings(android: initializationSettingsAndroid);
 
     await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       // Use this for handling notification taps
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (navigatorKey.currentState != null) {
           navigatorKey.currentState!.push(
-            MaterialPageRoute(builder: (_) =>  AllNotificationRequest()),
+            MaterialPageRoute(builder: (_) => AllNotificationRequest()),
           );
         }
       },
@@ -40,7 +41,8 @@ class NotificationHandler {
     // Foreground notification handler
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
-        showNotification(message.notification!.title, message.notification!.body);
+        showNotification(
+            message.notification!.title, message.notification!.body);
       }
     });
 
@@ -48,7 +50,7 @@ class NotificationHandler {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       if (navigatorKey.currentState != null) {
         navigatorKey.currentState!.push(
-          MaterialPageRoute(builder: (_) =>  AllNotificationRequest()),
+          MaterialPageRoute(builder: (_) => AllNotificationRequest()),
         );
       }
     });
@@ -56,7 +58,7 @@ class NotificationHandler {
 
   static Future<void> showNotification(String? title, String? body) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails(
+        AndroidNotificationDetails(
       'your_channel_id', // Channel ID
       'your_channel_name', // Channel Name
       channelDescription: 'your_channel_description',
@@ -65,13 +67,13 @@ class NotificationHandler {
     );
 
     const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
+        NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await _flutterLocalNotificationsPlugin.show(
-      0,
-      title,
-      body,
-      platformChannelSpecifics,
+      id: 0,
+      title: title,
+      body: body,
+      notificationDetails: platformChannelSpecifics,
       payload: 'Default_Sound',
     );
   }
