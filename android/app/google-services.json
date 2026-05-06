@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "909961959511",
-    "project_id": "tournamentapp-ea980",
-    "storage_bucket": "tournamentapp-ea980.firebasestorage.app"
+    "project_number": "264690258883",
+    "project_id": "gen-lang-client-0922107247",
+    "storage_bucket": "gen-lang-client-0922107247.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:909961959511:android:b0b3c81bf2c23ea0af2b12",
+        "mobilesdk_app_id": "1:264690258883:android:3248f03f08de62521de376",
         "android_client_info": {
           "package_name": "com.example.tournament_freefire"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB-9kmPXfz1qyII54eeJDZAtwI6Zz_BG3E"
+          "current_key": "AIzaSyBiEL7Uexumu-A1BuPqwzYk10ij9czWjRw"
         }
       ],
       "services": {
